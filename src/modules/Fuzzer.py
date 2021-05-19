@@ -25,6 +25,7 @@ class Fuzzer:
         self.runforever = True
         self.statistic = Statistic()
         self.generator = None
+        random.seed(a=args.seed)
         if not self.args.quiet:
             print("Yin-Yang is running:")
 
@@ -102,6 +103,8 @@ class Fuzzer:
 
     def create_testbook(self, formula):
         testbook = []
+        if self.args.compare_mode:
+            timeout_index = random.randint(0,1)
         if not self.args.keep_mutants:
             testcase = "%s/%s.smt2" % (self.args.scratchfolder, self.args.name)
         else:
@@ -123,7 +126,11 @@ class Fuzzer:
                                                         self.args.name,random_string())
                 with open(testcase, 'w') as testcase_writer:
                     testcase_writer.write(self.args.optfuzz.generate(cli) + formula.__str__())
-            testbook.append((cli,testcase))
+            if self.args.compare_mode:
+                testbook.append((cli, testcase, self.args.compare_mode_timeouts[timeout_index % 2]))
+                timeout_index += 1
+            else:
+                testbook.append((cli,testcase))
         return testbook
 
 
@@ -166,9 +173,12 @@ class Fuzzer:
         reference = None
 
         for testitem in testbook:
+            timeout = self.args.timeout
+            if self.args.compare_mode:
+                timeout = testitem[2]
             solver_cli, scratchfile = testitem[0], testitem[1]
             solver = Solver(solver_cli)
-            stdout, stderr, exitcode = solver.solve(scratchfile, self.args.timeout, debug=self.args.diagnose)
+            stdout, stderr, exitcode = solver.solve(scratchfile, timeout, debug=self.args.diagnose)
 
             # (1) Detect crashes from a solver run including invalid models.
             if self.in_crash_list(stdout, stderr):

@@ -103,6 +103,24 @@ parser.add_argument(
     type=int,
     help="file size limit on seed formula in bytes"
 )
+parser.add_argument(
+    "-cmp", "--compare-mode",
+    action='store_true',
+    help="compares two clis by executing the same formula on the given two timeouts (chosen u.a.r.).\
+    Outputs then the concerning mutant, if the one with the longer timeout timed out and the other did not."
+)
+parser.add_argument(
+    "-cmpt", "--compare-mode-timeouts",
+    nargs=2,
+    type=int,
+    default=[1, 8],
+    help="set timeouts for compare-mode"
+)
+parser.add_argument(
+    "-sd", "--seed",
+    type=int,
+    help="fixes the random seed for reproducible results."
+)
 
 args = parser.parse_args()
 
@@ -159,6 +177,12 @@ if (args.strategy == "opfuzz" and len(args.PATH_TO_SEEDS) < 1):
     exit("Error: please provide at least one seed for opfuzz strategy.")
 if (args.strategy == "fusion" and len(args.PATH_TO_SEEDS) < 2):
     exit("Error: please provide at least two seeds for fusion strategy.")
+
+if (args.compare_mode):
+    if (len(args.SOLVER_CLIS) != 2):
+        exit("Error: please provide two clis for compare-mode.")
+    if (args.compare_mode_timeouts[0] == args.compare_mode_timeouts[1] or args.compare_mode_timeouts[0] > 16 or args.compare_mode_timeouts[1] > 16):
+        exit("Error: please select timeouts that do not equate and are below 16.")
 
 if args.optfuzz == "": args.optfuzz = None
 else: args.optfuzz = OptionGenerator(args.optfuzz)
