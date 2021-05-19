@@ -172,11 +172,15 @@ class Fuzzer:
         testbook = self.create_testbook(formula)
         reference = None
 
+        solver_timeouts = []
+        timed_out = []
+
         for testitem in testbook:
             timeout = self.args.timeout
             if self.args.compare_mode:
                 timeout = testitem[2]
             solver_cli, scratchfile = testitem[0], testitem[1]
+            solver_timeouts.append((solver_cli, timeout))
             solver = Solver(solver_cli)
             stdout, stderr, exitcode = solver.solve(scratchfile, timeout, debug=self.args.diagnose)
 
@@ -206,6 +210,7 @@ class Fuzzer:
 
                     elif exitcode == 137: #timeout
                         self.statistic.timeout += 1
+                        timed_out.append((solver_cli, timeout))
                         continue # continue with next solver (4)
 
                     elif exitcode == 127: #command not found
@@ -243,7 +248,23 @@ class Fuzzer:
                                              solver_cli, stdout, stderr,
                                              random_string())
                         return False # stop testing
+        if self.args.compare_mode:
+            # if smt solver with longer timeout timed out and smt solver with shorter timeout did not, output formula with solver and timeout
+            shorter_to = min(solver_timeouts, key=lambda x: x[1])
+            longer_to = max(solver_timeouts, key=lambda x: x[1])
+            if longer_to in timed_out and not shorter_to in timed_out:
+                self.output_mutant(formula, shorter_to, longer_to)
         return True
+
+    def output_mutant(self, formula, shorter_to, longer_to):
+        testcase = "%s/%s-T:%i-VS-%s-T:%i-%s" % (self.args.outputfolder,
+                                 plain(longer_to[0]),
+                                 longer_to[1],
+                                 plain(shorter_to[0]),
+                                 shorter_to[1],
+                                 self.args.name)
+        with open(testcase, 'w') as testcase_writer:
+            testcase_writer.write(formula.__str__())
 
     def in_crash_list(self, stdout, stderr):
         return in_list(stdout,stderr,crash_list)

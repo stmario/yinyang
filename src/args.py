@@ -77,6 +77,13 @@ parser.add_argument(
          instance should have its own scratch folder. (default:"+rootpath+"/scratch)"
 )
 parser.add_argument(
+    "-out","--outputfolder",
+    default=rootpath+"/output",
+    help="specifies where the mutant formulas are stored which are caught by compare-mode.\
+         Note, if you run yinyang with several processes in parallel, each\
+         instance should have its own output folder. (default:"+rootpath+"/scratch)"
+)
+parser.add_argument(
     "-opconfig","--opconfig",
     default=rootpath+"/config/operator_mutations.txt",
     help="set operator mutation configuration (default: "+rootpath+"/config/operator_mutations.txt)"
@@ -157,6 +164,13 @@ if not os.path.isdir(args.scratchfolder):
         print(e)
         exit(0)
 
+if not os.path.isdir(args.outputfolder):
+    try:
+        os.mkdir(args.outputfolder)
+    except Exception as e:
+        print(e)
+        exit(0)
+
 temp_seeds = []
 for path in args.PATH_TO_SEEDS:
     if not os.path.exists(path):
@@ -179,6 +193,8 @@ if (args.strategy == "fusion" and len(args.PATH_TO_SEEDS) < 2):
     exit("Error: please provide at least two seeds for fusion strategy.")
 
 if (args.compare_mode):
+    if args.optfuzz:
+        exit("Error: cannot combine optfuzz with compare_mode.")
     if (len(args.SOLVER_CLIS) != 2):
         exit("Error: please provide two clis for compare-mode.")
     if (args.compare_mode_timeouts[0] == args.compare_mode_timeouts[1] or args.compare_mode_timeouts[0] > 16 or args.compare_mode_timeouts[1] > 16):
