@@ -12,10 +12,11 @@ class Statistic:
         self.duplicates = 0
         self.timeout = 0
         self.ignored = 0
+        self.performance_mutants = 0
 
     def printbar(self):
-        bar = "[time:%ds, #mutant:%d, #seed:%d, #crash:%d, #unsound:%d, #dups:%d, #timeout:%d, #ignored:%d]" \
-              % (time.time()-self.starttime, self.mutants, self.seeds, self.crashes, self.soundness, self.duplicates, self.timeout, self.ignored)
+        bar = "[time:%ds, #mutant:%d, #seed:%d, #crash:%d, #unsound:%d, #dups:%d, #timeout:%d, #ignored:%d, #performance mutants:%d]" \
+              % (time.time()-self.starttime, self.mutants, self.seeds, self.crashes, self.soundness, self.duplicates, self.timeout, self.ignored, self.performance_mutants)
         print(bar, end="\r", flush=True)
 
     def printsum(self):
@@ -30,6 +31,7 @@ Soundness issues: %d
 Duplicate issues: %d
 Timeout cases: %d
 Ignored issues: %d
+Performance mutants found: %d
 """ \
-        % (time.time()-self.starttime, self.mutants, self.seeds,  self.crashes, self.soundness, self.duplicates, self.timeout, self.ignored)
+        % (time.time()-self.starttime, self.mutants, self.seeds,  self.crashes, self.soundness, self.duplicates, self.timeout, self.ignored, self.performance_mutants)
         print(summary, end="\n", flush=True)

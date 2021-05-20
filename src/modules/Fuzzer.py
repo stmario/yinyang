@@ -253,6 +253,7 @@ class Fuzzer:
             shorter_to = min(solver_timeouts, key=lambda x: x[1])
             longer_to = max(solver_timeouts, key=lambda x: x[1])
             if longer_to in timed_out and not shorter_to in timed_out:
+                self.statistic.performance_mutants += 1
                 self.output_mutant(formula, shorter_to, longer_to)
         return True
 
