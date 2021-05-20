@@ -257,7 +257,7 @@ class Fuzzer:
         return True
 
     def output_mutant(self, formula, shorter_to, longer_to):
-        testcase = "%s/%s-T:%i-VS-%s-T:%i-%s" % (self.args.outputfolder,
+        testcase = "%s/%s-T:%i-VS-%s-T:%i-%s.smt2" % (self.args.outputfolder,
                                  plain(longer_to[0]),
                                  longer_to[1],
                                  plain(shorter_to[0]),
