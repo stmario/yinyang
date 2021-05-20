@@ -253,17 +253,18 @@ class Fuzzer:
             shorter_to = min(solver_timeouts, key=lambda x: x[1])
             longer_to = max(solver_timeouts, key=lambda x: x[1])
             if longer_to in timed_out and not shorter_to in timed_out:
-                self.statistic.performance_mutants += 1
                 self.output_mutant(formula, shorter_to, longer_to)
+                self.statistic.performance_mutants += 1
         return True
 
     def output_mutant(self, formula, shorter_to, longer_to):
-        testcase = "%s/%s-T_%i-VS-%s-T_%i-%s.smt2" % (self.args.outputfolder,
+        testcase = "%s/%s-T_%i-VS-%s-T_%i-%s_%d.smt2" % (self.args.outputfolder,
                                  plain(longer_to[0]),
                                  longer_to[1],
                                  plain(shorter_to[0]),
                                  shorter_to[1],
-                                 self.args.name)
+                                 self.args.name,
+                                 self.statistic.performance_mutants)
         with open(testcase, 'w') as testcase_writer:
             testcase_writer.write(formula.__str__())
 
